@@ -2,8 +2,9 @@ import mongoose from "mongoose";
 
 // Input attributes from TypeScript
 interface IAccount {
-	username: string;
-	password: string;
+	id: string;
+	authToken: string;
+	refreshToken: string;
 }
 
 interface AccountModal extends mongoose.Model<AccountDoc> {
@@ -13,19 +14,24 @@ interface AccountModal extends mongoose.Model<AccountDoc> {
 // Output Schema
 interface AccountDoc extends mongoose.Document {
 	id: string;
-	password: string;
+	authToken: string;
+	refreshToken: string;
 }
 
 // MongoDB Schema.
 const accountSchema = new mongoose.Schema({
-	username: {
+	id: {
 		type: String,
 		required: true,
 	},
-	password: {
+	authToken: {
 		type: String,
 		required: true,
 	},
+	refreshToken: {
+		type: String,
+		required: true
+	}
 });
 
 accountSchema.statics.build = (attr: IAccount): AccountDoc => {

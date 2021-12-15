@@ -8,6 +8,7 @@ import { getSpotifyAccountInfo } from "./api/spotifyDataAPI";
 import { Request, Response } from "express";
 import { ISpotifyAuthRequest } from "./Interfaces/ISpotifyRequest";
 import { getSpotifyAuthTokens } from "./api/spotifyAuthAPI";
+import { Account } from "./models/Account";
 
 const auth = Router();
 
@@ -56,7 +57,13 @@ auth.post("/token", (req, res) => {
 				return;
 			} else {
 				getSpotifyAccountInfo(tokens)
-					.then(accountInfo => console.log(accountInfo.id));
+					.then(async accountInfo => {
+						await Account.build({
+							id: accountInfo.id,
+							authToken: tokens.authToken,
+							refreshToken: tokens.refreshToken
+						}).save()
+					});
 			}
 			return;
 		})
