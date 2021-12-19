@@ -14,3 +14,10 @@ export interface ISpotifyAuthRequest extends ISpotifyBaseRequest {
 		grant_type: string;
 	};
 }
+
+export interface ISpotifyAuthRefresh extends ISpotifyBaseRequest {
+	form: {
+		refresh_token: string;
+		grant_type: string;
+	};
+}

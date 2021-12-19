@@ -5,7 +5,7 @@ import mongoose from "mongoose";
 import cookieParser from "cookie-parser";
 
 // ROUTER IMPORTS
-import auth from './auth';
+import auth from './routes/auth';
 
 // Set Environmental Vars
 dotenv.config()
@@ -22,12 +22,6 @@ app.use(express.json())
 // Routes
 app.use('/auth', auth);
 
-app.use('/success', (req, res) => {
-   res.send("HELLO");
-})
-
-mongoose.connect(process.env.DB_CONNECT_STRING, () => {
-   console.log("Connected to Database!")
-});
+mongoose.connect(process.env.DB_CONNECT_STRING);
 
 app.listen(port);

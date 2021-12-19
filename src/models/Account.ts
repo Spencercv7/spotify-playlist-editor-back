@@ -1,10 +1,11 @@
 import mongoose from "mongoose";
 
 // Input attributes from TypeScript
-interface IAccount {
+export interface IAccount {
 	id: string;
 	authToken: string;
 	refreshToken: string;
+	expirationTimestamp: number;
 }
 
 interface AccountModal extends mongoose.Model<AccountDoc> {
@@ -12,10 +13,11 @@ interface AccountModal extends mongoose.Model<AccountDoc> {
 }
 
 // Output Schema
-interface AccountDoc extends mongoose.Document {
+export interface AccountDoc extends mongoose.Document {
 	id: string;
 	authToken: string;
 	refreshToken: string;
+	expirationTimestamp: number;
 }
 
 // MongoDB Schema.
@@ -31,6 +33,10 @@ const accountSchema = new mongoose.Schema({
 	refreshToken: {
 		type: String,
 		required: true
+	},
+	expirationTimestamp: {
+		type: Number,
+		required: true
 	}
 });
 
@@ -42,13 +48,3 @@ export const Account = mongoose.model<AccountDoc, AccountModal>(
 	"Account",
 	accountSchema
 );
-
-// app.post("/new-user", async (req: Request, res: Response) => {
-// 	console.log(req.body);
-// 	const account = Account.build({
-// 		username: req.body.username,
-// 		password: req.body.password,
-// 	});
-// 	await account.save();
-// 	return res.status(201).send(account);
-// });
