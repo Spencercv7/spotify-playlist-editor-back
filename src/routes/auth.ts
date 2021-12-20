@@ -10,8 +10,6 @@ import {
 	refreshSpotifyAuthTokens,
 } from "../spotify/auth";
 
-import { Error } from "../types/Error";
-
 import {
 	addUser,
 	getAuthTokens,
@@ -21,6 +19,7 @@ import {
 } from "../database/mongo";
 
 import { AuthenticationTokens } from "../types/AuthenticationTypes";
+import { AccountInfo } from "../types/DataTypes";
 
 const auth = Router();
 
@@ -88,9 +87,30 @@ auth.post("/generate-code", (req, res) => {
 auth.post("/generate-id", (req, res) => {
 	const id = req.body.id;
 
-	getAuthTokens(id).then(async (_tokens: AuthenticationTokens) => {
-		const tokens = await validateAuthenticationTokens(id, _tokens);
-	});
+	if (id) {
+		getAuthTokens(id).then((_tokens: AuthenticationTokens) => {
+			validateAuthenticationTokens(id, _tokens)
+				.then((tokens: AuthenticationTokens) => {
+					getSpotifyAccountInfo(tokens).then(
+						(accountInfo: AccountInfo) => {
+							res.status(200).send(accountInfo);
+							return;
+						}
+					);
+				})
+				.catch((error: Error) => {
+					res.status(400).send({
+						name: error.name,
+						message: error.message,
+					});
+					return;
+				});
+			return;
+		});
+	} else {
+		res.status(400).send("Spotify ID not provided in request body.");
+		return;
+	}	
 });
 
 // Checks if users authentication tokens are valid.
@@ -99,41 +119,37 @@ auth.post("/generate-id", (req, res) => {
 const validateAuthenticationTokens = async (
 	id: string,
 	tokens: AuthenticationTokens
-): Promise<AuthenticationTokens | Error> => {
+): Promise<AuthenticationTokens> => {
 	if (isExpired(tokens.expirationTimestamp)) {
 		// Refresh authentication token.
-		refreshSpotifyAuthTokens(tokens).then(
-			(tokens: AuthenticationTokens) => {
+		refreshSpotifyAuthTokens(tokens)
+			.then((tokens: AuthenticationTokens) => {
 				if (tokens) {
-					setAuthTokens(id, tokens).then((success: boolean) => {
-						if (success) return tokens;
-						else {
-							return {
-								error: "Failed to update/create user in DB.",
-							};
-						}
-					});
+					setAuthTokens(id, tokens)
+						.then((success: boolean) => {
+							if (success) return tokens;
+							else {
+								throw new Error(
+									"Failed to set fresh authentication tokens in DB."
+								);
+							}
+						})
+						.catch((error: Error) => {
+							throw error;
+						});
 				} else {
-					return {
-						error: "Failed to generate fresh authentication tokens.",
-					};
+					throw new Error(
+						"Failed to generate fresh authentication tokens."
+					);
 				}
-			}
-		);
+			})
+			.catch((error: Error) => {
+				throw error;
+			});
 	} else {
 		return tokens;
 	}
 };
-
-// res.status(400).send({
-// 	error: "Failed to store updated authentication tokens in DB.",
-// });
-// return;
-
-// res.status(400).send({
-// 	error: "Failed to generate new authentication tokens.",
-// });
-// return;
 
 // Checks to see if the authToken is expired or will expire within the next second.
 const isExpired = (expirationTimestamp: number) => {

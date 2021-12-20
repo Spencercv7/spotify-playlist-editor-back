@@ -50,7 +50,7 @@ export const getSpotifyAuthRefreshOptions = (refreshToken: string): ISpotifyAuth
 		url: "https://accounts.spotify.com/api/token",
 		form: {
 			refresh_token: refreshToken,
-			grant_type: "authorization_code",
+			grant_type: "refresh_token",
 		},
 		headers: {
 			Authorization:
