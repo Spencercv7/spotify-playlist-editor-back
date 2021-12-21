@@ -6,6 +6,7 @@ import cookieParser from "cookie-parser";
 
 // ROUTER IMPORTS
 import auth from './routes/auth';
+import data from './routes/data';
 
 // Set Environmental Vars
 dotenv.config()
@@ -21,6 +22,7 @@ app.use(express.json())
 
 // Routes
 app.use('/auth', auth);
+app.use('/data', data);
 
 mongoose.connect(process.env.DB_CONNECT_STRING);
 
